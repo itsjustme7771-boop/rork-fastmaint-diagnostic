@@ -12,6 +12,7 @@ A focused first version of a maintenance diagnostic app for plant floor technici
 - **Diagnostic history** — All past sessions saved per equipment, searchable, with the resolution outcome (fixed / unresolved).
 - **Quick-fault chips** — Tap common faults like "Won't start", "E-stop tripped", "Sensor fault", "VFD fault" to skip typing.
 - **Fault code lookup** — Paste or type a VFD/PLC fault code to get an instant interpretation.
+- **Vibration Check** — Use the phone gyroscope/motion sensor to capture a quick vibration baseline and flag likely mechanical issues like looseness, bearing wear, misalignment, imbalance, or belt/chain slap.
 - **Feedback loop** — Every diagnosis ends with "Did this fix the issue?" Yes marks resolved; No prompts for PLC light status, voltage readings, and fault codes to refine.
 
 ## Design
@@ -33,6 +34,7 @@ A focused first version of a maintenance diagnostic app for plant floor technici
 - **Equipment Detail** — Machine photo, specs, common failures, recent sessions, and "Start Diagnosis" CTA.
 - **Diagnostic Session** — Chat-style screen showing the structured AI response (Safety → Causes → 60-Sec Check → Steps → Feedback). Online/offline AI badge in the header.
 - **Fault Code Lookup** — Quick screen to paste a code and get an interpretation.
+- **Vibration Check** — New screen for a 15-second motion capture with live g-force meter, safety warning, probable vibration pattern, and capture steps.
 - **History** — All past diagnostic sessions across equipment, filterable by resolved/unresolved.
 - **Settings** — AI mode preference (auto/online/offline), haptics toggle, and an "About" page noting login, subscriptions, and document upload are coming next.
 

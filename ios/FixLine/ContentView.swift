@@ -16,6 +16,11 @@ struct ContentView: View {
             .tabItem { Label("Equipment", systemImage: "gearshape.2.fill") }
 
             NavigationStack {
+                VibrationCheckView()
+            }
+            .tabItem { Label("Vibration", systemImage: "gyroscope") }
+
+            NavigationStack {
                 HistoryView()
             }
             .tabItem { Label("History", systemImage: "clock.fill") }
