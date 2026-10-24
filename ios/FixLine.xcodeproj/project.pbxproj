@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		XX9A6BCB275EF5DC9E5458XX /* FixLineWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = XX2E38FE66C2CB0D795D3FXX /* FixLineWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		XXD63457E41125E77BACFDXX /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = XX8F6E1A701EA04CDCEA3DXX /* RevenueCat */; };
 /* End PBXBuildFile section */
 
@@ -25,13 +26,45 @@
 			remoteGlobalIDString = 105FC5792E9EAD3100EA8BCF;
 			remoteInfo = FixLine;
 		};
+		XX7DA839B8322BAAEC7308XX /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 105FC5722E9EAD3100EA8BCF /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = XX366C940088188575D4D0XX;
+			remoteInfo = FixLineWidget;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		XX8618DA762832199DA68BXX /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				XX9A6BCB275EF5DC9E5458XX /* FixLineWidget.appex in Embed Foundation Extensions */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			name = "Embed Foundation Extensions";
+			dstPath = "";
+			dstSubfolderSpec = 13;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		105FC57A2E9EAD3100EA8BCF /* FixLine.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FixLine.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		105FC5892E9EAD3200EA8BCF /* FixLineTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FixLineTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		105FC5932E9EAD3200EA8BCF /* FixLineUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = FixLineUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		XX2E38FE66C2CB0D795D3FXX /* FixLineWidget.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FixLineWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		XXBF06D899BA9C2B564D7DXX /* Exceptions for "FixLineWidget" folder in "FixLineWidget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = XX366C940088188575D4D0XX /* FixLineWidget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		105FC57C2E9EAD3100EA8BCF /* FixLine */ = {
@@ -48,6 +81,14 @@
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = FixLineUITests;
 			sourceTree = "<group>";
+		};
+		XXE46B1D9B9A3163879CD8XX /* FixLineWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FixLineWidget;
+			sourceTree = "<group>";
+			exceptions = (
+				XXBF06D899BA9C2B564D7DXX /* Exceptions for "FixLineWidget" folder in "FixLineWidget" target */,
+			);
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -74,6 +115,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		XX4FC4576B2416B5230305XX /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -84,6 +132,7 @@
 				105FC58C2E9EAD3200EA8BCF /* FixLineTests */,
 				105FC5962E9EAD3200EA8BCF /* FixLineUITests */,
 				105FC57B2E9EAD3100EA8BCF /* Products */,
+				XXE46B1D9B9A3163879CD8XX /* FixLineWidget */,
 			);
 			sourceTree = "<group>";
 		};
@@ -93,6 +142,7 @@
 				105FC57A2E9EAD3100EA8BCF /* FixLine.app */,
 				105FC5892E9EAD3200EA8BCF /* FixLineTests.xctest */,
 				105FC5932E9EAD3200EA8BCF /* FixLineUITests.xctest */,
+				XX2E38FE66C2CB0D795D3FXX /* FixLineWidget.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -107,10 +157,12 @@
 				105FC5762E9EAD3100EA8BCF /* Sources */,
 				105FC5772E9EAD3100EA8BCF /* Frameworks */,
 				105FC5782E9EAD3100EA8BCF /* Resources */,
+				XX8618DA762832199DA68BXX /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				XX549EBD22E336D066EA82XX /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				105FC57C2E9EAD3100EA8BCF /* FixLine */,
@@ -169,6 +221,26 @@
 			productReference = 105FC5932E9EAD3200EA8BCF /* FixLineUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		XX366C940088188575D4D0XX /* FixLineWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = XXA9AFE54D70C4B93B5D18XX /* Build configuration list for PBXNativeTarget "FixLineWidget" */;
+			buildPhases = (
+				XX3FEE15C251FF31C242B1XX /* Sources */,
+				XX4FC4576B2416B5230305XX /* Frameworks */,
+				XXA352B69FEBFC2C688201XX /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FixLineWidget;
+			productName = FixLineWidget;
+			productReference = XX2E38FE66C2CB0D795D3FXX /* FixLineWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+			fileSystemSynchronizedGroups = (
+				XXE46B1D9B9A3163879CD8XX /* FixLineWidget */,
+			);
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -209,6 +281,7 @@
 				105FC5792E9EAD3100EA8BCF /* FixLine */,
 				105FC5882E9EAD3200EA8BCF /* FixLineTests */,
 				105FC5922E9EAD3200EA8BCF /* FixLineUITests */,
+				XX366C940088188575D4D0XX /* FixLineWidget */,
 			);
 			packageReferences = (
 				XX56D7F10BAEE1D3529BF9XX /* XCRemoteSwiftPackageReference "purchases-ios-spm" */,
@@ -232,6 +305,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		105FC5912E9EAD3200EA8BCF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		XXA352B69FEBFC2C688201XX /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -262,6 +342,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		XX3FEE15C251FF31C242B1XX /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -274,6 +361,11 @@
 			isa = PBXTargetDependency;
 			target = 105FC5792E9EAD3100EA8BCF /* FixLine */;
 			targetProxy = 105FC5942E9EAD3200EA8BCF /* PBXContainerItemProxy */;
+		};
+		XX549EBD22E336D066EA82XX /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = XX366C940088188575D4D0XX /* FixLineWidget */;
+			targetProxy = XX7DA839B8322BAAEC7308XX /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -553,6 +645,52 @@
 			};
 			name = Release;
 		};
+		XX621B458329641407340FXX /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FixLineWidget/FixLineWidget.entitlements;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.rork.shle9lbqr58vnwazlcyxu.fixlinewidget;
+				SDKROOT = iphoneos;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FixLineWidget/Info.plist;
+				SWIFT_VERSION = 5.0;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 1.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+			};
+			name = Release;
+		};
+		XXC9C0C8CCF000B84EE403XX /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = FixLineWidget/FixLineWidget.entitlements;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_BUNDLE_IDENTIFIER = app.rork.shle9lbqr58vnwazlcyxu.fixlinewidget;
+				SDKROOT = iphoneos;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = FixLineWidget/Info.plist;
+				SWIFT_VERSION = 5.0;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				MARKETING_VERSION = 1.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @executable_path/../../Frameworks";
+				INFOPLIST_KEY_CFBundleDisplayName = "$(PRODUCT_NAME)";
+			};
+			name = Debug;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -588,6 +726,15 @@
 			buildConfigurations = (
 				105FC5A42E9EAD3200EA8BCF /* Debug */,
 				105FC5A52E9EAD3200EA8BCF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		XXA9AFE54D70C4B93B5D18XX /* Build configuration list for PBXNativeTarget "FixLineWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				XXC9C0C8CCF000B84EE403XX /* Debug */,
+				XX621B458329641407340FXX /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

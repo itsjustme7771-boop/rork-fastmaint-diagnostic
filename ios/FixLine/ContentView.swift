@@ -50,7 +50,15 @@ struct ContentView: View {
         }
         .task {
             seedIfNeeded()
+            FleetSummaryPublisher.publish(equipment: equipment)
         }
+        .onChange(of: statusSignature) {
+            FleetSummaryPublisher.publish(equipment: equipment)
+        }
+    }
+
+    private var statusSignature: String {
+        equipment.map { "\($0.id):\($0.statusRaw)" }.joined(separator: "|")
     }
 
     private func seedIfNeeded() {
