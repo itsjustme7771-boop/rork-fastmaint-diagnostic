@@ -9,7 +9,7 @@ struct FixLineApp: App {
     @State private var store = StoreManager()
 
     var sharedModelContainer: ModelContainer = {
-        let schema = Schema([Equipment.self, DiagnosticSession.self])
+        let schema = Schema([Equipment.self, DiagnosticSession.self, ManualDocument.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         do {
             return try ModelContainer(for: schema, configurations: [config])

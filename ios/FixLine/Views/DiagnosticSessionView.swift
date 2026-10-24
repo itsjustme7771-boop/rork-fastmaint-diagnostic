@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 struct DiagnosticSessionView: View {
     @Environment(\.modelContext) private var modelContext
@@ -17,6 +18,9 @@ struct DiagnosticSessionView: View {
     @State private var resolvedMode: AIMode = .auto
     @State private var session: DiagnosticSession?
     @State private var showInputSheet: Bool = false
+    @State private var pickedImage: UIImage?
+    @State private var photoItem: PhotosPickerItem?
+    @Query private var manuals: [ManualDocument]
 
     init(symptom: String, equipment: Equipment?) {
         self.initialSymptom = symptom
@@ -64,6 +68,44 @@ struct DiagnosticSessionView: View {
             if !symptom.isEmpty {
                 await runDiagnosis()
             }
+        }
+        .onChange(of: photoItem) {
+            guard let item = photoItem else { return }
+            Task { await loadPhoto(item) }
+        }
+    }
+
+    private func loadPhoto(_ item: PhotosPickerItem) async {
+        guard let data = try? await item.loadTransferable(type: Data.self),
+              let img = UIImage(data: data) else { return }
+        Haptics.tap()
+        pickedImage = img
+        photoItem = nil
+    }
+
+    private var photoPreview: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            ZStack(alignment: .topTrailing) {
+                Image(uiImage: pickedImage!)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 150)
+                    .clipShape(.rect(cornerRadius: 10))
+                    .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.stroke, lineWidth: 1))
+                Button {
+                    Haptics.warning()
+                    pickedImage = nil
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title3)
+                        .foregroundStyle(.white, Theme.danger)
+                        .padding(6)
+                }
+            }
+            Text("AI will read the photo for visible faults")
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(Theme.textTertiary)
         }
     }
 
@@ -124,6 +166,20 @@ struct DiagnosticSessionView: View {
                 .background(Theme.surfaceElevated)
                 .clipShape(.rect(cornerRadius: 12))
                 .foregroundStyle(Theme.textPrimary)
+            HStack(spacing: 10) {
+                PhotosPicker(selection: $photoItem, matching: .images) {
+                    Label(pickedImage == nil ? "Add Photo" : "Replace Photo", systemImage: "camera.viewfinder")
+                        .font(.subheadline.weight(.bold))
+                        .foregroundStyle(Theme.primary)
+                        .frame(maxWidth: .infinity, minHeight: 48)
+                        .background(Theme.surfaceElevated)
+                        .clipShape(.rect(cornerRadius: 10))
+                        .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.stroke, lineWidth: 1))
+                }
+            }
+            if pickedImage != nil {
+                photoPreview
+            }
             if symptom.isEmpty || report.isEmpty {
                 Button {
                     Haptics.tap()
@@ -315,20 +371,29 @@ struct DiagnosticSessionView: View {
         isLoading = true
         error = nil
         report = .empty
+        let imageB64 = pickedImage.flatMap { ImageCompressor.jpegBase64(from: $0) }
+        let thumbData = pickedImage.flatMap { ImageCompressor.resized($0, longEdge: 640)?.jpegData(compressionQuality: 0.6) }
         do {
-            let (text, mode) = try await AIService.shared.diagnose(symptom: trimmed, equipment: equipment, mode: aiMode)
+            let (text, mode) = try await AIService.shared.diagnose(
+                symptom: trimmed,
+                equipment: equipment,
+                mode: aiMode,
+                imageBase64: imageB64,
+                manuals: Array(manuals)
+            )
             rawText = text
             report = DiagnosticParser.parse(text)
             resolvedMode = mode
 
             if session == nil {
-                let s = DiagnosticSession(symptom: trimmed, rawResponse: text, aiMode: mode, outcome: .open, equipment: equipment)
+                let s = DiagnosticSession(symptom: trimmed, rawResponse: text, aiMode: mode, outcome: .open, equipment: equipment, photo: thumbData)
                 modelContext.insert(s)
                 session = s
             } else {
                 session?.symptom = trimmed
                 session?.rawResponse = text
                 session?.aiMode = mode
+                if thumbData != nil { session?.photoData = thumbData }
             }
             try? modelContext.save()
             Haptics.tap()
@@ -481,6 +546,15 @@ struct SessionReadView: View {
                     Text(session.symptom)
                         .font(.title3.weight(.bold))
                         .foregroundStyle(Theme.textPrimary)
+                    if let data = session.photoData, let ui = UIImage(data: data) {
+                        Image(uiImage: ui)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 160)
+                            .clipShape(.rect(cornerRadius: 10))
+                            .overlay(RoundedRectangle(cornerRadius: 10).stroke(Theme.stroke, lineWidth: 1))
+                    }
                     if let eq = session.equipment {
                         Text("\(eq.name) • \(eq.id)")
                             .font(.caption.monospaced().weight(.bold))

@@ -162,7 +162,32 @@ struct SettingsView: View {
                 .font(.caption.weight(.heavy))
                 .tracking(2)
                 .foregroundStyle(Theme.textTertiary)
-            comingRow("doc.fill", "Manual uploads", "Upload PDFs and documents the AI reads during diagnosis.")
+            NavigationLink {
+                KnowledgeBaseView()
+            } label: {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: "books.vertical.fill")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(Theme.primary)
+                        .frame(width: 28)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Knowledge Base")
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(Theme.textPrimary)
+                        Text("Upload PDF manuals the AI reads during diagnosis.")
+                            .font(.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(Theme.textTertiary)
+                }
+                .padding(10)
+                .background(Theme.surfaceElevated)
+                .clipShape(.rect(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
             comingRow("tray.full.fill", "Review unresolved", "See open diagnoses across the crew and close them out.")
         }
         .frame(maxWidth: .infinity, alignment: .leading)

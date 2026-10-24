@@ -30,6 +30,7 @@ final class DiagnosticSession {
     var aiModeRaw: String
     var outcomeRaw: String
     var equipment: Equipment?
+    @Attribute(.externalStorage) var photoData: Data?
 
     var aiMode: AIMode {
         get { AIMode(rawValue: aiModeRaw) ?? .auto }
@@ -48,7 +49,8 @@ final class DiagnosticSession {
         rawResponse: String = "",
         aiMode: AIMode = .auto,
         outcome: SessionOutcome = .open,
-        equipment: Equipment? = nil
+        equipment: Equipment? = nil,
+        photo: Data? = nil
     ) {
         self.id = id
         self.createdAt = createdAt
@@ -57,5 +59,6 @@ final class DiagnosticSession {
         self.aiModeRaw = aiMode.rawValue
         self.outcomeRaw = outcome.rawValue
         self.equipment = equipment
+        self.photoData = photo
     }
 }

@@ -47,7 +47,7 @@ nonisolated struct Provider: TimelineProvider {
     }
 }
 
-private enum WidgetPalette {
+nonisolated enum WidgetPalette {
     static let bg = Color(red: 0.06, green: 0.07, blue: 0.08)
     static let surface = Color(red: 0.14, green: 0.15, blue: 0.17)
     static let primary = Color(red: 1.0, green: 0.84, blue: 0.0)
@@ -66,11 +66,66 @@ nonisolated struct WidgetView: View {
             switch family {
             case .systemSmall: small
             case .systemMedium: medium
+            case .accessoryCircular: circular
+            case .accessoryInline: inline
+            case .accessoryRectangular: rectangular
             default: large
             }
         }
         .containerBackground(for: .widget) {
-            WidgetPalette.bg
+            switch family {
+            case .accessoryCircular, .accessoryInline, .accessoryRectangular:
+                Color.clear
+            default:
+                WidgetPalette.bg
+            }
+        }
+    }
+
+    private var downColor: Color {
+        entry.summary.down.isEmpty ? WidgetPalette.success : WidgetPalette.danger
+    }
+
+    private var circular: some View {
+        VStack(spacing: 0) {
+            Text("\(entry.summary.down.count)")
+                .font(.system(size: 30, weight: .black, design: .rounded).monospacedDigit())
+            Text("DOWN")
+                .font(.system(size: 9, weight: .heavy))
+                .tracking(1)
+        }
+        .foregroundStyle(downColor)
+        .widgetAccentable()
+    }
+
+    private var inline: some View {
+        Text(entry.summary.down.isEmpty
+             ? "FixLine · All lines running"
+             : "FixLine · \(entry.summary.down.count) machine\(entry.summary.down.count == 1 ? "" : "s") down")
+            .font(.headline.weight(.bold))
+            .foregroundStyle(downColor)
+            .widgetAccentable()
+    }
+
+    private var rectangular: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Image(systemName: "bolt.gearshape.fill")
+                    .font(.caption.weight(.black))
+                Text("FixLine")
+                    .font(.caption.weight(.heavy))
+            }
+            .foregroundStyle(WidgetPalette.primary)
+            if entry.summary.down.isEmpty {
+                Text("All \(entry.summary.running) lines running")
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(WidgetPalette.success)
+            } else {
+                Text(entry.summary.down.prefix(2).joined(separator: ", "))
+                    .font(.footnote.weight(.bold))
+                    .foregroundStyle(WidgetPalette.danger)
+                    .lineLimit(2)
+            }
         }
     }
 
@@ -218,6 +273,9 @@ struct FixLineWidget: Widget {
         }
         .configurationDisplayName("Fleet Status")
         .description("Down machines, maintenance, and running lines at a glance.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([
+            .systemSmall, .systemMedium, .systemLarge,
+            .accessoryCircular, .accessoryInline, .accessoryRectangular
+        ])
     }
 }

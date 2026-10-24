@@ -21,9 +21,64 @@ nonisolated enum AIServiceError: Error, LocalizedError, Sendable {
     }
 }
 
+nonisolated struct ImageURLPart: Codable, Sendable {
+    let url: String
+}
+
+nonisolated struct ContentPart: Codable, Sendable {
+    let type: String
+    var text: String?
+    var imageURL: ImageURLPart?
+
+    enum CodingKeys: String, CodingKey {
+        case type
+        case text
+        case imageURL = "image_url"
+    }
+
+    init(type: String, text: String? = nil, imageURL: ImageURLPart? = nil) {
+        self.type = type
+        self.text = text
+        self.imageURL = imageURL
+    }
+}
+
+/// Chat content is either a plain string or an OpenAI-style multimodal parts array.
+nonisolated enum ChatContent: Codable, Sendable {
+    case text(String)
+    case parts([ContentPart])
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.singleValueContainer()
+        if let s = try? c.decode(String.self) {
+            self = .text(s)
+        } else {
+            self = .parts(try c.decode([ContentPart].self))
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.singleValueContainer()
+        switch self {
+        case .text(let s): try c.encode(s)
+        case .parts(let p): try c.encode(p)
+        }
+    }
+}
+
 nonisolated struct ChatMessage: Codable, Sendable {
     let role: String
-    let content: String
+    let content: ChatContent
+
+    init(role: String, content: ChatContent) {
+        self.role = role
+        self.content = content
+    }
+
+    init(role: String, text: String) {
+        self.role = role
+        self.content = .text(text)
+    }
 }
 
 nonisolated struct ChatRequest: Codable, Sendable {
@@ -69,7 +124,13 @@ final class AIService {
     Be concise, scannable, command-style. No theory.
     """
 
-    func diagnose(symptom: String, equipment: Equipment?, mode: AIMode) async throws -> (String, AIMode) {
+    func diagnose(
+        symptom: String,
+        equipment: Equipment?,
+        mode: AIMode,
+        imageBase64: String? = nil,
+        manuals: [ManualDocument] = []
+    ) async throws -> (String, AIMode) {
         let resolvedMode: AIMode
         switch mode {
         case .auto:
@@ -78,12 +139,12 @@ final class AIService {
             resolvedMode = mode
         }
 
-        let userPrompt = buildUserPrompt(symptom: symptom, equipment: equipment)
+        let userPrompt = buildUserPrompt(symptom: symptom, equipment: equipment, manuals: manuals, imageBase64: imageBase64)
 
         if resolvedMode == .offline {
             return (try await diagnoseOnDevice(userPrompt: userPrompt), .offline)
         } else {
-            return (try await diagnoseCloud(userPrompt: userPrompt), .online)
+            return (try await diagnoseCloud(userPrompt: userPrompt, imageBase64: imageBase64), .online)
         }
     }
 
@@ -96,7 +157,7 @@ final class AIService {
         }
     }
 
-    private func buildUserPrompt(symptom: String, equipment: Equipment?) -> String {
+    private func buildUserPrompt(symptom: String, equipment: Equipment?, manuals: [ManualDocument] = [], imageBase64: String? = nil) -> String {
         var p = "Issue: \(symptom)\n"
         if let e = equipment {
             p += "Equipment: \(e.name) (\(e.kind.label))\n"
@@ -109,11 +170,21 @@ final class AIService {
                 p += "Tech notes: \(e.notes)\n"
             }
         }
+        let excerpts = ManualLibrary.relevantExcerpts(for: symptom, equipment: equipment, docs: manuals)
+        if !excerpts.isEmpty {
+            p += "\nPLANT KNOWLEDGE BASE — excerpts from uploaded equipment manuals (treat as authoritative for this plant):\n"
+            for e in excerpts {
+                p += "--- \(e.title) ---\n\(e.snippet)\n"
+            }
+        }
+        if imageBase64 != nil {
+            p += "\nA photo of the affected equipment is attached. Read anything visible: warning LEDs/HMI messages, tripped breakers, damaged or burnt components, fluid leaks, misaligned sensors, missing/loose hardware, jammed product. Reference what you see in the diagnosis where relevant.\n"
+        }
         p += "Respond in the mandatory format."
         return p
     }
 
-    private func diagnoseCloud(userPrompt: String) async throws -> String {
+    private func diagnoseCloud(userPrompt: String, imageBase64: String? = nil) async throws -> String {
         let key = Config.EXPO_PUBLIC_RORK_TOOLKIT_SECRET_KEY
         let baseURL = ProcessInfo.processInfo.environment["EXPO_PUBLIC_TOOLKIT_URL"] ?? "https://toolkit.rork.com"
         guard !key.isEmpty else { throw AIServiceError.missingKey }
@@ -125,11 +196,24 @@ final class AIService {
         req.setValue("application/json", forHTTPHeaderField: "Content-Type")
         req.timeoutInterval = 60
 
+        let userMessage: ChatMessage
+        if let imageBase64 {
+            userMessage = ChatMessage(
+                role: "user",
+                content: .parts([
+                    ContentPart(type: "text", text: userPrompt),
+                    ContentPart(type: "image_url", imageURL: ImageURLPart(url: "data:image/jpeg;base64,\(imageBase64)"))
+                ])
+            )
+        } else {
+            userMessage = ChatMessage(role: "user", text: userPrompt)
+        }
+
         let body = ChatRequest(
             model: model,
             messages: [
-                .init(role: "system", content: systemPrompt),
-                .init(role: "user", content: userPrompt)
+                .init(role: "system", text: systemPrompt),
+                userMessage
             ],
             temperature: 0.2
         )
@@ -141,7 +225,12 @@ final class AIService {
             throw AIServiceError.badResponse(http.statusCode)
         }
         let decoded = try JSONDecoder().decode(ChatResponse.self, from: data)
-        return decoded.choices.first?.message.content ?? ""
+        switch decoded.choices.first?.message.content {
+        case .text(let s): return s
+        case .parts(let parts):
+            return parts.compactMap { $0.text }.joined(separator: "\n")
+        case nil: return ""
+        }
     }
 
     private func diagnoseOnDevice(userPrompt: String) async throws -> String {
