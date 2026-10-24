@@ -1,25 +1,193 @@
 import SwiftUI
 
 struct SettingsView: View {
-    @AppStorage("ai.mode") private var aiModeRaw: String = AIMode.auto.rawValue
-    @AppStorage("haptics.enabled") private var hapticsEnabled: Bool = true
+    @Environment(AuthManager.self) private var auth
+    @Environment(StoreManager.self) private var store
     @Environment(NetworkMonitor.self) private var network
+
+    @AppStorage("ai.mode") private var aiModeRaw: String = AIMode.auto.rawValue
+    @AppStorage("user.role") private var roleRaw: String = UserRole.technician.rawValue
+
+    @State private var showPaywall = false
+
+    private var role: UserRole { UserRole(rawValue: roleRaw) ?? .technician }
 
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
+                    if let user = auth.user {
+                        accountCard(user: user)
+                        subscriptionCard
+                        if role == .lead || role == .management {
+                            managementCard
+                        }
+                    }
                     aiCard
                     statusCard
-                    upcomingCard
                     aboutCard
                 }
                 .padding(16)
             }
             .background(Theme.bg.ignoresSafeArea())
             .navigationTitle("Settings")
+            .sheet(isPresented: $showPaywall) {
+                PaywallView()
+            }
         }
     }
+
+    // MARK: - Account
+
+    private func accountCard(user: AuthManager.User) -> some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("ACCOUNT")
+                .font(.caption.weight(.heavy))
+                .tracking(2)
+                .foregroundStyle(Theme.textTertiary)
+
+            HStack(spacing: 12) {
+                Image(systemName: "person.crop.circle.fill")
+                    .font(.system(size: 40))
+                    .foregroundStyle(Theme.primary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(user.name ?? user.email)
+                        .font(.headline.weight(.bold))
+                        .foregroundStyle(Theme.textPrimary)
+                    if user.name != nil {
+                        Text(user.email)
+                            .font(.caption)
+                            .foregroundStyle(Theme.textSecondary)
+                    }
+                }
+                Spacer()
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text("ROLE TIER")
+                    .font(.caption.weight(.heavy))
+                    .tracking(1)
+                    .foregroundStyle(Theme.textTertiary)
+                Menu {
+                    ForEach(UserRole.allCases) { r in
+                        Button {
+                            Haptics.tap()
+                            roleRaw = r.rawValue
+                        } label: {
+                            Label(r.label, systemImage: r.symbol)
+                        }
+                    }
+                } label: {
+                    HStack {
+                        Label(role.label, systemImage: role.symbol)
+                            .font(.subheadline.weight(.bold))
+                            .foregroundStyle(Theme.onPrimary)
+                        Spacer()
+                        Image(systemName: "chevron.up.chevron.down")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(Theme.onPrimary)
+                    }
+                    .padding(.horizontal, 14)
+                    .frame(height: 44)
+                    .background(Theme.primary)
+                    .clipShape(.rect(cornerRadius: 10))
+                }
+                Text(role.description)
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+
+            Button {
+                Haptics.warning()
+                Task { await auth.signOut() }
+            } label: {
+                Label("Sign Out", systemImage: "rectangle.portrait.and.arrow.right")
+            }
+            .buttonStyle(SecondaryButtonStyle())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
+    }
+
+    // MARK: - Subscription
+
+    private var subscriptionCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("SUBSCRIPTION")
+                .font(.caption.weight(.heavy))
+                .tracking(2)
+                .foregroundStyle(Theme.textTertiary)
+
+            HStack {
+                Label(store.tier.label + " Plan", systemImage: store.tier.symbol)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(Theme.textPrimary)
+                Spacer()
+                StatusPill(text: store.tier.label, color: store.tier.color, symbol: "checkmark.seal.fill")
+            }
+
+            if store.tier == .free {
+                Text("Unlock unlimited AI diagnoses, cloud reasoning, and vibration analysis.")
+                    .font(.caption)
+                    .foregroundStyle(Theme.textSecondary)
+            }
+
+            if store.tier != .free {
+                Button {
+                    Haptics.tap()
+                    showPaywall = true
+                } label: {
+                    Text("Compare Plans")
+                }
+                .buttonStyle(SecondaryButtonStyle())
+            } else {
+                Button {
+                    Haptics.tap()
+                    showPaywall = true
+                } label: {
+                    Label("Upgrade", systemImage: "bolt.crown.fill")
+                }
+                .buttonStyle(PrimaryButtonStyle())
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
+    }
+
+    // MARK: - Lead / Management tools
+
+    private var managementCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("LEAD TOOLS")
+                .font(.caption.weight(.heavy))
+                .tracking(2)
+                .foregroundStyle(Theme.textTertiary)
+            comingRow("doc.fill", "Manual uploads", "Upload PDFs and documents the AI reads during diagnosis.")
+            comingRow("tray.full.fill", "Review unresolved", "See open diagnoses across the crew and close them out.")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .cardStyle()
+    }
+
+    private func comingRow(_ symbol: String, _ title: String, _ subtitle: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: symbol)
+                .font(.title3.weight(.bold))
+                .foregroundStyle(Theme.primary)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title).font(.subheadline.weight(.bold)).foregroundStyle(Theme.textPrimary)
+                Text(subtitle).font(.caption).foregroundStyle(Theme.textSecondary)
+            }
+            Spacer()
+            StatusPill(text: "Soon", color: Theme.textSecondary)
+        }
+        .padding(10)
+        .background(Theme.surfaceElevated)
+        .clipShape(.rect(cornerRadius: 10))
+    }
+
+    // MARK: - AI mode
 
     private var aiCard: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -96,37 +264,6 @@ struct SettingsView: View {
         .cardStyle()
     }
 
-    private var upcomingCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text("COMING NEXT")
-                .font(.caption.weight(.heavy))
-                .tracking(2)
-                .foregroundStyle(Theme.textTertiary)
-            row("person.crop.circle.badge.checkmark", "Login & user tiers", "Technician / Lead / Management roles.")
-            row("creditcard.fill", "Subscription tiers", "Basic $9.99 • Advanced $24.99 • Premium $54.99.")
-            row("doc.fill", "Manual uploads", "Leads upload PDFs the AI reads in diagnoses.")
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .cardStyle()
-    }
-
-    private func row(_ symbol: String, _ title: String, _ subtitle: String) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            Image(systemName: symbol)
-                .font(.title3.weight(.bold))
-                .foregroundStyle(Theme.primary)
-                .frame(width: 28)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(title).font(.subheadline.weight(.bold)).foregroundStyle(Theme.textPrimary)
-                Text(subtitle).font(.caption).foregroundStyle(Theme.textSecondary)
-            }
-            Spacer()
-        }
-        .padding(10)
-        .background(Theme.surfaceElevated)
-        .clipShape(.rect(cornerRadius: 10))
-    }
-
     private var aboutCard: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text("FixLine")
@@ -135,7 +272,7 @@ struct SettingsView: View {
             Text("Industrial maintenance diagnostic engine. Reduce MTTR. Keep techs safe.")
                 .font(.caption)
                 .foregroundStyle(Theme.textSecondary)
-            Text("v1.0")
+            Text("v1.1")
                 .font(.caption.monospaced())
                 .foregroundStyle(Theme.textTertiary)
                 .padding(.top, 2)

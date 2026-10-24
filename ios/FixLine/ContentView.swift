@@ -3,9 +3,29 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(AuthManager.self) private var auth
     @Query private var equipment: [Equipment]
 
     var body: some View {
+        Group {
+            if auth.isLoading {
+                ZStack {
+                    Theme.bg.ignoresSafeArea()
+                    ProgressView()
+                        .controlSize(.large)
+                        .tint(Theme.primary)
+                }
+            } else if auth.user == nil {
+                LoginView()
+            } else {
+                mainTabs
+            }
+        }
+        .tint(Theme.primary)
+        .preferredColorScheme(.dark)
+    }
+
+    private var mainTabs: some View {
         TabView {
             HomeView()
                 .tabItem { Label("Home", systemImage: "house.fill") }
@@ -28,8 +48,6 @@ struct ContentView: View {
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "slider.horizontal.3") }
         }
-        .tint(Theme.primary)
-        .preferredColorScheme(.dark)
         .task {
             seedIfNeeded()
         }

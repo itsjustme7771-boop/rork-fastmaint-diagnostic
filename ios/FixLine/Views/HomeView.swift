@@ -8,9 +8,11 @@ struct HomeView: View {
 
     @State private var showingScanner = false
     @State private var showingFaultCode = false
+    @State private var showingPaywall = false
     @State private var pendingDiagnosis: PendingDiagnosis?
 
     @Environment(NetworkMonitor.self) private var network
+    @Environment(StoreManager.self) private var store
 
     struct PendingDiagnosis: Identifiable {
         let id = UUID()
@@ -58,6 +60,9 @@ struct HomeView: View {
                     DiagnosticSessionView(symptom: p.symptom, equipment: p.equipment)
                 }
             }
+            .sheet(isPresented: $showingPaywall) {
+                PaywallView()
+            }
         }
     }
 
@@ -74,7 +79,16 @@ struct HomeView: View {
                         .foregroundStyle(Theme.textPrimary)
                 }
                 Spacer()
-                AIModeBadge(mode: network.isOnline ? .online : .offline)
+                if store.tier == .free {
+                    Button {
+                        Haptics.tap()
+                        showingPaywall = true
+                    } label: {
+                        StatusPill(text: "Upgrade", color: Theme.primary, symbol: "bolt.crown.fill")
+                    }
+                } else {
+                    AIModeBadge(mode: network.isOnline ? .online : .offline)
+                }
             }
 
             Button {

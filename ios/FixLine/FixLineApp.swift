@@ -1,9 +1,12 @@
 import SwiftUI
 import SwiftData
+import RevenueCat
 
 @main
 struct FixLineApp: App {
     @State private var network = NetworkMonitor.shared
+    @State private var auth = AuthManager()
+    @State private var store = StoreManager()
 
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([Equipment.self, DiagnosticSession.self])
@@ -30,12 +33,23 @@ struct FixLineApp: App {
         tab.backgroundColor = UIColor(Theme.surface)
         UITabBar.appearance().standardAppearance = tab
         UITabBar.appearance().scrollEdgeAppearance = tab
+
+        #if DEBUG
+        let rcKey = Config.EXPO_PUBLIC_REVENUECAT_TEST_API_KEY
+        #else
+        let rcKey = Config.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY
+        #endif
+        if !rcKey.isEmpty {
+            Purchases.configure(withAPIKey: rcKey)
+        }
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
                 .environment(network)
+                .environment(auth)
+                .environment(store)
         }
         .modelContainer(sharedModelContainer)
     }
